@@ -1,0 +1,4 @@
+master_ip: "192.168.50.10"
+nodes_ip: "192.168.50.#{i + 10}" 
+docker_group_members: 
+  - 'vagrant'

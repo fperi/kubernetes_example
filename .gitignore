@@ -1,0 +1,6 @@
+join-config
+*.idea
+*.vagrant
+*.log
+*.DS_Store
+*__

@@ -1,0 +1,61 @@
+# This roles perform the kubernetes installation using kubelet
+# It does not create the cluster and bind the nodes, actions
+# performed by subsequent roles
+
+# Deactivate swap (i.e. virtual memory, staff that shuold stay on RAM
+# written on disk). That's going to give low performance 
+- name: Remove swapfile from /etc/fstab
+  mount:
+    name: "{{ item }}"
+    fstype: swap
+    state: absent
+  with_items:
+    - swap
+    - none
+  tags:
+    - k8s
+
+- name: Disable swap
+  command: swapoff -a
+  tags:
+    - k8s
+
+# Tell apt what's the public key of the
+# source that is signing the packages for k8s
+- name: Add K8s official GPG key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+  tags:
+    - k8s
+
+# Add the k8s apt repository
+- name: Set up the stable repository
+  apt_repository:
+    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+    filename: kubernetes.list
+    update_cache: yes
+  tags:
+    - k8s
+
+# sudo apt-get update
+- name: Update apt packages
+  apt:
+    update_cache: yes
+  tags:
+    - k8s
+
+# Install k8s
+- name: Install Kubernetes binaries
+  apt:
+    name: [kubelet, kubeadm, kubectl]
+    state: present
+    update_cache: yes
+
+# Restart k8s
+- name: Restart kubelet
+  service:
+    name: kubelet
+    daemon_reload: yes
+    state: restarted

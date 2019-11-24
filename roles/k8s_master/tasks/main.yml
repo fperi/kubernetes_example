@@ -1,0 +1,39 @@
+# This roles initialise the k8s master node
+
+# Check if initialisation files are already there
+# This will avoid Ansible to crash due to a failed 
+# initialisation
+- name: Check if Kubernetes was already initialised
+  stat: path=/etc/kubernetes/kubelet.conf
+  register: kb_there
+
+# Initialise k8s
+# pod-network-cidr must match the one in the calico yaml down below!!!
+- name: Initialize the Kubernetes cluster using kubeadm
+  command: kubeadm init --apiserver-advertise-address={{ master_ip }} --apiserver-cert-extra-sans={{ master_ip }} --node-name k8s-master --pod-network-cidr=192.168.0.0/16
+  when: kb_there.stat.exists == False and master_ip is defined
+
+# Setup permissions for k8s
+- name: Setup kubeconfig for vagrant user
+  command: "{{ item }}"
+  with_items:
+    - mkdir -p /home/vagrant/.kube
+    - cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
+    - chown vagrant:vagrant /home/vagrant/.kube/config
+  when:  kb_there.stat.exists == False
+
+# Configure networking
+- name: Install calico pod network
+  become: false
+  command: kubectl apply -f https://docs.projectcalico.org/v3.9/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml
+
+# Save tokens and keys to join nodes 
+# (which will be performed in the node configuration role)
+- name: Save join configuration
+  become: true
+  command: kubeadm token create --print-join-command
+  register: join_config
+
+- name: Save join config locally
+  become: false
+  local_action: copy content="{{ join_config.stdout_lines[0] }}" dest="./join-config"

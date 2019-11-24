@@ -1,0 +1,12 @@
+# This role deploys a docker image on the nodes
+
+# Copy deployment file over
+- name: Copy deploymenet
+  copy:
+    src: "{{ role_path }}/files/app_deployment.yml"
+    dest: /tmp/app_deployment.yml
+
+# Deploy
+- name: Deploy app
+  become: false
+  command: kubectl apply -f /tmp/app_deployment.yml

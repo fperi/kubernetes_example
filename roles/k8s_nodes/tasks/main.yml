@@ -1,0 +1,17 @@
+# This roles initialise the k8s slave nodes
+
+# Check if initialisation files are already there
+# This will avoid Ansible to crash due to a failed 
+# initialisation
+- name: Check if Kubernetes was already initialised
+  stat: path=/etc/kubernetes/kubelet.conf
+  register: kubelet_kb
+
+# Join node to master
+- name: Copy the join config to server location
+  copy: src=join-config dest=/tmp/join-config.sh mode=0777
+  when:  kubelet_kb.stat.exists == False
+
+- name: Join the node to cluster
+  command: sh /tmp/join-config.sh
+  when:  kubelet_kb.stat.exists == False

@@ -21,3 +21,4 @@
     - docker
     - k8s_general
     - k8s_nodes
+    - app_deployment_nodes

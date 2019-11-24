@@ -1,0 +1,19 @@
+# This role deploys the hello-world image on the cluster
+
+# Copy deployment file over
+- name: Copy deploymenet
+  copy:
+    src: "{{ role_path }}/files/hello_deployment.yml"
+    dest: /tmp/hello_deployment.yml
+
+# Replace nodeport with the one in the configuration
+- name: replace port
+  replace: 
+    path: /tmp/hello_deployment.yml
+    regexp: 'node_port_to_substitute'
+    replace: '{{ hello_port }}'
+
+# Deploy
+- name: Deploy app
+  become: false
+  command: kubectl apply -f /tmp/hello_deployment.yml

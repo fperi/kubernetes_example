@@ -21,4 +21,5 @@
     - docker
     - k8s_general
     - k8s_master
+    - hello_deployment
     - app_deployment

@@ -15,7 +15,8 @@ Vagrant.configure("2") do |config|
         # network
         master.vm.network "private_network", ip: default_vars["master_ip"]
         # forward to port for access from localhost
-        master.vm.network "forwarded_port", guest: 30000, host: 30000
+        master.vm.network "forwarded_port", guest: default_vars["hello_port"], host: default_vars["hello_port"]
+        master.vm.network "forwarded_port", guest: default_vars["app_port"], host: default_vars["app_port"]
 
         # pip configuration
         master.vm.provision "shell",inline: <<-SHELL
@@ -47,7 +48,7 @@ Vagrant.configure("2") do |config|
             # OS
             node.vm.box = "ubuntu/xenial64"
             # network
-            node.vm.network "private_network", ip: default_vars["nodes_ip"]
+            node.vm.network "private_network", ip: default_vars["nodes_ip"]+"#{i + 10}"
 
             # pip configuration
             node.vm.provision "shell",inline: <<-SHELL

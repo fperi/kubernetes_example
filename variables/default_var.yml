@@ -1,4 +1,6 @@
 master_ip: "192.168.50.10"
-nodes_ip: "192.168.50.#{i + 10}" 
+nodes_ip: "192.168.50." 
+hello_port: "30000"
+app_port: "30001"
 docker_group_members: 
   - 'vagrant'

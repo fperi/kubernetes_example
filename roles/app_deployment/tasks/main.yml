@@ -1,10 +1,18 @@
-# This role deploys a docker image on the nodes
+# This role deploys a python-web app after building an image
+# on the server
 
 # Copy deployment file over
 - name: Copy deploymenet
   copy:
     src: "{{ role_path }}/files/app_deployment.yml"
     dest: /tmp/app_deployment.yml
+
+# Replace nodeport with the one in the configuration
+- name: replace port
+  replace: 
+    path: /tmp/app_deployment.yml
+    regexp: 'node_port_to_substitute'
+    replace: '{{ app_port }}'
 
 # Deploy
 - name: Deploy app

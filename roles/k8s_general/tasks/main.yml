@@ -53,6 +53,16 @@
     state: present
     update_cache: yes
 
+- name: Create file for node ip config
+  command: touch /etc/default/kubelet
+  args:
+    creates: /etc/default/kubelet
+
+- name: Configure node ip
+  lineinfile:
+    path: /etc/default/kubelet
+    line: KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}
+
 # Restart k8s
 - name: Restart kubelet
   service:

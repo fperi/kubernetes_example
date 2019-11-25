@@ -73,6 +73,12 @@ Update configuration:
 kubectl apply -f deployment.yml
 ````
 
+Monitor performances (requires the metric-server):
+
+````
+kubectl top pods
+````
+
 Delete service and deployment:
 
 ````
@@ -89,4 +95,8 @@ https://kubernetes.io/blog/2019/03/15/kubernetes-setup-using-ansible-and-vagrant
 https://medium.com/@dstrimble/kubernetes-horizontal-pod-autoscaling-for-local-development-d211e52c309c
 
 https://github.com/kelseyhightower/kubernetes-the-hard-way
+
+https://github.com/kubernetes-sigs/metrics-server
+
+https://github.com/kubernetes-sigs/metrics-server/issues/278
 ````

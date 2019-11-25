@@ -1,6 +1,13 @@
 # Vagrantfile to create master and slave nodes
 Vagrant.configure("2") do |config|
 
+    config.ssh.insert_key = false
+
+    config.vm.provider "virtualbox" do |v|
+        v.memory = 1024
+        v.cpus = 2
+    end
+
     # Require YAML module
     require 'yaml'
  
@@ -53,16 +60,15 @@ Vagrant.configure("2") do |config|
             # pip configuration
             node.vm.provision "shell",inline: <<-SHELL
                   export DEBIAN_FRONTEND=noninteractive
-                  sudo apt-get -y update
-                  sudo apt-get -y upgrade
-                  sudo apt-get install -y python-pip
+                  apt-get update
+                  apt-get install -y python-pip
             SHELL
 
             node.vm.provision "ansible" do |ansible|
                 ansible.verbose = "v"
                 ansible.playbook = "playbook_nodes.yml"
                 ansible.extra_vars = {
-                    node_ip: default_vars["nodes_ip"],
+                    node_ip: default_vars["nodes_ip"]+"#{i + 10}",
                     ansible_python_interpreter: "/usr/bin/python"
                 }
             end

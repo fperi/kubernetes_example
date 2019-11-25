@@ -10,7 +10,7 @@
 # Initialise k8s
 # pod-network-cidr must match the one in the calico yaml down below!!!
 - name: Initialize the Kubernetes cluster using kubeadm
-  command: kubeadm init --apiserver-advertise-address={{ master_ip }} --apiserver-cert-extra-sans={{ master_ip }} --node-name k8s-master --pod-network-cidr=192.168.0.0/16
+  command: kubeadm init --apiserver-advertise-address={{ master_ip }} --apiserver-cert-extra-sans={{ master_ip }} --node-name master --pod-network-cidr=192.168.0.0/16
   when: kb_there.stat.exists == False and master_ip is defined
 
 # Setup permissions for k8s
@@ -26,6 +26,37 @@
 - name: Install calico pod network
   become: false
   command: kubectl apply -f https://docs.projectcalico.org/v3.9/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml
+
+# Install monitoring tools
+# Create dir for monitoring
+- name: Setup tmp dir to clone app
+  file:
+    path: /tmp/monitoring/
+    state: directory
+
+# Clone code
+- name: Clone monitorings
+  git:
+    repo: "https://github.com/kubernetes-incubator/metrics-server"
+    dest: /tmp/monitoring/
+
+# Fix metric-server
+# Copy deployment file over
+- name: Fix metric-server
+  copy:
+    src: "{{ role_path }}/files/metrics-server-deployment.yaml"
+    dest: /tmp/monitoring/deploy/1.8+/metrics-server-deployment.yaml
+
+# Install tools
+- name: Install monitoring
+  become: false
+  command: kubectl apply -f /tmp/monitoring/deploy/1.8+/
+
+# Delete source code
+- name: Delete source code
+  file:
+    state: absent
+    path: "/tmp/monitoring/"
 
 # Save tokens and keys to join nodes 
 # (which will be performed in the node configuration role)

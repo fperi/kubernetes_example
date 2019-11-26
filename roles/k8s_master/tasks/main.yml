@@ -6,12 +6,16 @@
 - name: Check if Kubernetes was already initialised
   stat: path=/etc/kubernetes/kubelet.conf
   register: kb_there
-
+  tags:
+    - k8s
+    
 # Initialise k8s
 # pod-network-cidr must match the one in the calico yaml down below!!!
 - name: Initialize the Kubernetes cluster using kubeadm
   command: kubeadm init --apiserver-advertise-address={{ master_ip }} --apiserver-cert-extra-sans={{ master_ip }} --node-name master --pod-network-cidr=192.168.0.0/16
   when: kb_there.stat.exists == False and master_ip is defined
+  tags:
+    - k8s
 
 # Setup permissions for k8s
 - name: Setup kubeconfig for vagrant user
@@ -21,42 +25,51 @@
     - cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
     - chown vagrant:vagrant /home/vagrant/.kube/config
   when:  kb_there.stat.exists == False
+  tags:
+    - k8s
 
 # Configure networking
 - name: Install calico pod network
   become: false
   command: kubectl apply -f https://docs.projectcalico.org/v3.9/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml
+  tags:
+    - k8s
 
-# Install monitoring tools
+# Install monitoring tools. 
+# This is essential for the autoscaler to work
 # Create dir for monitoring
 - name: Setup tmp dir to clone app
   file:
     path: /tmp/monitoring/
     state: directory
+  tags:
+    - k8s
 
 # Clone code
 - name: Clone monitorings
   git:
     repo: "https://github.com/kubernetes-incubator/metrics-server"
     dest: /tmp/monitoring/
+    version: "v0.3.6"
+  tags:
+    - k8s
 
-# Fix metric-server
+# Fix for the metric-server deployment
 # Copy deployment file over
 - name: Fix metric-server
-  copy:
-    src: "{{ role_path }}/files/metrics-server-deployment.yaml"
-    dest: /tmp/monitoring/deploy/1.8+/metrics-server-deployment.yaml
+  copy: src={{ item.src }} dest={{ item.dest }}
+  with_items:
+    - { src: "{{ role_path }}/files/metrics-server-deployment.yaml", dest: "/tmp/monitoring/deploy/1.8+/metrics-server-deployment.yaml" }
+    - { src: "{{ role_path }}/files/metrics-server-service.yaml", dest: "/tmp/monitoring/deploy/1.8+/metrics-server-service.yaml" }
+  tags:
+    - k8s
 
 # Install tools
 - name: Install monitoring
   become: false
   command: kubectl apply -f /tmp/monitoring/deploy/1.8+/
-
-# Delete source code
-- name: Delete source code
-  file:
-    state: absent
-    path: "/tmp/monitoring/"
+  tags:
+    - k8s
 
 # Save tokens and keys to join nodes 
 # (which will be performed in the node configuration role)
@@ -64,7 +77,11 @@
   become: true
   command: kubeadm token create --print-join-command
   register: join_config
+  tags:
+    - k8s
 
 - name: Save join config locally
   become: false
   local_action: copy content="{{ join_config.stdout_lines[0] }}" dest="./join-config"
+  tags:
+    - k8s

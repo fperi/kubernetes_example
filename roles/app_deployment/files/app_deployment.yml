@@ -1,20 +1,30 @@
+# This deployment file use an image available locally on the nodes
+# to deploy a simple python web-app. It also defines
+# a service to expose the app to the outside world and an 
+# outoscaler to scale on the CPU.
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
   name: app
 spec:
+  # target for the autoscalining
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
     name: app
+  # minimum number of pods 
   minReplicas: 1
+  # maximum number of pods 
   maxReplicas: 5
+  # which resource to monitor to scale
   metrics:
   - type: Resource
     resource:
       name: cpu
       target:
         type: Utilization
+        # when to start scaling (percentage of expected resource, 
+        # defined below in the container config)
         averageUtilization: 50
 ---
 apiVersion: apps/v1
@@ -24,13 +34,17 @@ metadata:
     run: app
   name: app
 spec:
-  progressDeadlineSeconds: 600
+   # how many Pods should run concurrently
   replicas: 1
-  revisionHistoryLimit: 10
+  # Number of old replicas to keep
+  revisionHistoryLimit: 1
   selector:
     matchLabels:
       run: app
   strategy:
+    # The following prevents downtime of the app
+    # by deploying new version of the pods first and then 
+    # taking down the old.
     rollingUpdate:
       maxSurge: 25%
       maxUnavailable: 25%
@@ -42,17 +56,19 @@ spec:
     spec:
       containers:
       - image: code_app
+        # never pull because image is local
         imagePullPolicy: Never
         name: app
-        resources: {}
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
+        # what is the expected amount of CPU the app 
+        # should use per pod in units of milliCPU
+        resources:
+          requests:
+            cpu: 20m
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      securityContext: {}
+      # After how long the pod is killed
       terminationGracePeriodSeconds: 30
-status: {}
 ---
 apiVersion: v1
 kind: Service
@@ -62,9 +78,12 @@ metadata:
   name: app
 spec:
   ports:
+  # Port to which the service is exposed internally in the cluster.
   - port: 80
     protocol: TCP
+    # Port to which the pod/container listen to.
     targetPort: 80
+    # Port exposed to the world.
     nodePort: node_port_to_substitute
   selector:
     run: app

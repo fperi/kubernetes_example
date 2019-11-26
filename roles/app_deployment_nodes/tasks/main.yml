@@ -1,24 +1,22 @@
 # This role pulls the repo and build the image for the web-app
-# on the nodes
-
-# Check if code was already cloned
-- name: Check if code was cloned
-  stat: path=/tmp/flask/Vagrantfile
-  register: flask_app
+# on the nodes. This is needed because each node needs to have 
+# the docker image available in order to deploy new pods.
 
 # Create dir for code
 - name: Setup tmp dir to clone app
   file:
     path: /tmp/flask/
     state: directory
-  when: flask_app.stat.exists == False
+  tags:
+    - deploy
 
 # Clone code
 - name: Clone app
   git: 
     repo: "https://github.com/fperi/flask_docker.git"
     dest: /tmp/flask/
-  when: flask_app.stat.exists == False
+  tags:
+    - deploy
 
 # Build image
 - name: Build app image
@@ -26,9 +24,14 @@
   shell: docker-compose build
   args:
     chdir: /tmp/flask/code
+  tags:
+    - deploy
 
 # Delete source code
 - name: Delete source code
   file:
     state: absent
     path: "/tmp/flask/"
+  tags:
+    - deploy
+    

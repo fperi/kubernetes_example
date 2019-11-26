@@ -6,12 +6,18 @@
 - name: Check if Kubernetes was already initialised
   stat: path=/etc/kubernetes/kubelet.conf
   register: kubelet_kb
+  tags:
+    - k8s
 
 # Join node to master
 - name: Copy the join config to server location
   copy: src=join-config dest=/tmp/join-config.sh mode=0777
   when:  kubelet_kb.stat.exists == False
+  tags:
+    - k8s
 
 - name: Join the node to cluster
   command: sh /tmp/join-config.sh
   when:  kubelet_kb.stat.exists == False
+  tags:
+    - k8s

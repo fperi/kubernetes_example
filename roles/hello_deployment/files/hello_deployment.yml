@@ -1,3 +1,6 @@
+# This deployment file gets an image from the hub and
+# deploys a replica on the cluster. It also defines
+# a service to expose the app to the outside world.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -5,13 +8,17 @@ metadata:
     run: hello-world
   name: hello-world
 spec:
-  progressDeadlineSeconds: 600
+  # how many Pods should run concurrently
   replicas: 1
-  revisionHistoryLimit: 10
+  # Number of old replicas to keep
+  revisionHistoryLimit: 1
   selector:
     matchLabels:
       run: hello-world
   strategy:
+    # The following prevents downtime of the app
+    # by deploying new version of the pods first and then 
+    # taking down the old.
     rollingUpdate:
       maxSurge: 25%
       maxUnavailable: 25%
@@ -22,18 +29,16 @@ spec:
         run: hello-world
     spec:
       containers:
+      # image pulled
       - image: gcr.io/google-samples/hello-app:1.0
+        # when to pull
         imagePullPolicy: IfNotPresent
         name: hello-world
-        resources: {}
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      securityContext: {}
+      # After how long the pod is killed
       terminationGracePeriodSeconds: 30
-status: {}
 ---
 apiVersion: v1
 kind: Service
@@ -43,9 +48,12 @@ metadata:
   name: hello-world
 spec:
   ports:
+  # Port to which the service is exposed internally in the cluster.
   - port: 80
     protocol: TCP
+    # Port to which the pod/container listen to.
     targetPort: 8080
+    # Port exposed to the world.
     nodePort: node_port_to_substitute
   selector:
     run: hello-world

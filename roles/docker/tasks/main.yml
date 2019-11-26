@@ -51,7 +51,7 @@
 # Install docker-compose
 - name: Install docker-compose
   pip:
-    name: [more_itertools==5.0.0, docker-compose]
+    name: [more_itertools==5.0.0, docker-compose==1.25.0]
   tags:
     - docker
 
@@ -61,6 +61,8 @@
     name: 'docker'
     state: 'started'
     enabled: 'yes'
+  tags:
+    - docker
 
 # Add users we want to make part of the docker group so that they can
 # user the docker socket
@@ -71,7 +73,8 @@
     append: 'yes'
   with_items: '{{ docker_group_members }}'
   when: 'docker_group_members is defined'
-
+  tags:
+    - docker
 
 # Clean useless docker stuff
 - name: Add cleaning task
@@ -82,3 +85,5 @@
     user:       root
     job:        "docker system prune --force && docker image prune --force --all && docker volume prune --force"
     cron_file:  docker-garbage-collector
+  tags:
+    - docker

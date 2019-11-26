@@ -1,4 +1,4 @@
-# main playbook that calls the others
+# main playbook for the slave nodes
   # name of the playbook
 - name: Configure nodes
   # on which hosts to act
@@ -13,12 +13,16 @@
     - name: Install python for Ansible
       raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
       changed_when: False
+      # Load env. variables
     - name: Load variables
       include_vars: variables/default_var.yml
       
   roles:
-    # calls base and test roles
+    # Insall docker
     - docker
+    # Install k8s
     - k8s_general
+    # Configure k8s on slaves
     - k8s_nodes
+    # Deploy app with autoscaling
     - app_deployment_nodes

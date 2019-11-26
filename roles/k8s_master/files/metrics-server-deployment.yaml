@@ -1,3 +1,5 @@
+# This deployment file includes fixes for the metric-server
+# deployment wrt to the version cloned from the official repo
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -22,16 +24,17 @@ spec:
       labels:
         k8s-app: metrics-server
     spec:
+      # this line is essential to get the server to communicate with the nodes
       hostNetwork: true
       serviceAccountName: metrics-server
       volumes:
-      # mount in tmp so we can safely use from-scratch images and/or read-only containers
       - name: tmp-dir
         emptyDir: {}
       containers:
       - name: metrics-server
         image: k8s.gcr.io/metrics-server-amd64:v0.3.6
         args:
+          # these lines are essential to get the server to communicate with the nodes
           - --kubelet-insecure-tls
           - --kubelet-preferred-address-types=InternalIP,Hostname,InternalDNS,ExternalDNS,ExternalIP
           - --cert-dir=/tmp

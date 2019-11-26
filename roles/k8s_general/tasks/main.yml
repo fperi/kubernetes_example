@@ -3,7 +3,7 @@
 # performed by subsequent roles
 
 # Deactivate swap (i.e. virtual memory, staff that shuold stay on RAM
-# written on disk). That's going to give low performance 
+# written on disk).
 - name: Remove swapfile from /etc/fstab
   mount:
     name: "{{ item }}"
@@ -39,29 +39,21 @@
   tags:
     - k8s
 
-# sudo apt-get update
-- name: Update apt packages
-  apt:
-    update_cache: yes
-  tags:
-    - k8s
-
 # Install k8s
 - name: Install Kubernetes binaries
   apt:
-    name: [kubelet, kubeadm, kubectl]
+    name: [kubelet=1.16.3-00, kubeadm=1.16.3-00, kubectl=1.16.3-00]
     state: present
     update_cache: yes
 
-- name: Create file for node ip config
-  command: touch /etc/default/kubelet
-  args:
-    creates: /etc/default/kubelet
-
-- name: Configure node ip
-  lineinfile:
-    path: /etc/default/kubelet
-    line: KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}
+# Specify Internal IPs 
+- name: Ansible create file with content example
+  copy:
+    dest: "/etc/default/kubelet"
+    content: |
+      KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}
+  tags:
+    - k8s
 
 # Restart k8s
 - name: Restart kubelet
@@ -69,3 +61,5 @@
     name: kubelet
     daemon_reload: yes
     state: restarted
+  tags:
+    - k8s

@@ -35,6 +35,35 @@ vagrant halt
 vagrant destroy
 ````
 
+### Further information
+
+There are two apps deployed on the cluster: 
+
+    - A simple hello-world app (gcr.io/google-samples/hello-app:1.0) reachable through port 30000.
+    This app is deployed on a single pod, without autoscaling.
+
+        ````
+        curl -X GET http://localhost:30000 
+        ````
+
+    - A web-app taken from `https://github.com/fperi/flask_docker`. This one is reachable through port
+    30001 and it has 2 endpoints:
+
+        ````
+        curl -X GET http://localhost:30001/
+        ````
+
+        ````
+        curl -d "[1,2]" -X POST http://localhost:30001/sum_list
+        ````
+    
+    The second one corresponds to a simple python script that performs the sum of the elements in a list.
+    This web-app is deployed with an autoscaler that can create up to 5 pods. 
+
+    If you want to see the autoscaler in action, open 2 terminals. Use the first to go into the master node
+    `vagrant ssh master`. You can check the status of the cluster with: `kubectl get all`. You should see a single node called `app`. In the second widow of the terminal run `source test_autoscaling.sh`. This script will perform around 5000 request to the web-app. After a minute or so by calling `kubectl get all`, you should see that the cluster has now 5 pods called `app`. Once the requests have finished, wait
+    for another couple of minutes and the cluster will have destroyed the pods, and kept only one.
+
 ### Tips and tricks
 
 Inspecting your cluster:
@@ -79,13 +108,18 @@ Monitor performances (requires the metric-server):
 kubectl top pods
 ````
 
+Check if api metrics are reachable:
+
+````
+kubectl get --raw /apis/metrics.k8s.io/v1beta1
+````
+
 Delete service and deployment:
 
 ````
 kubectl delete deployment name-of-deplyment
 kubectl delete service name-of-service
 ````
-
 
 ### Useful documentation
 

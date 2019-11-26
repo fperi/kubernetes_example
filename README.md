@@ -65,7 +65,7 @@ This one is reachable through port 30001 and it has 2 endpoints:
     If you want to see the autoscaler in action, open 2 terminals. 
     Use the first to go into the master node `vagrant ssh master`. 
     You can check the status of the cluster with: `kubectl get all`. You should 
-    see a single node called `app`. In the second widow of the terminal 
+    see only one pod has a name starting with `app`. In the second widow of the terminal 
     run `source test_autoscaling.sh`. This script will perform around 5000 
     request to the web-app. After a minute or so by calling `kubectl get all`, 
     you should see that the cluster has now 5 pods called `app`. Once the 

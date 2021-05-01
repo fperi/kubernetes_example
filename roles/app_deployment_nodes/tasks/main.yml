@@ -1,5 +1,5 @@
 # This role pulls the repo and build the image for the web-app
-# on the nodes. This is needed because each node needs to have 
+# on the nodes. This is needed because each node needs to have
 # the docker image available in order to deploy new pods.
 
 # Create dir for code
@@ -12,7 +12,7 @@
 
 # Clone code
 - name: Clone app
-  git: 
+  git:
     repo: "https://github.com/fperi/flask_docker.git"
     dest: /tmp/flask/
   tags:
@@ -34,4 +34,3 @@
     path: "/tmp/flask/"
   tags:
     - deploy
-    

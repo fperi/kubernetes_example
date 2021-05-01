@@ -46,7 +46,7 @@
     state: present
     update_cache: yes
 
-# Specify Internal IPs 
+# Specify Internal IPs
 - name: Ansible create file with content example
   copy:
     dest: "/etc/default/kubelet"

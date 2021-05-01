@@ -16,7 +16,7 @@
       # Load env. variables
     - name: Load variables
       include_vars: variables/default_var.yml
-      
+
   roles:
     # Insall docker
     - docker

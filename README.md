@@ -2,19 +2,7 @@
 
 This is a short example that shows how to setup a local kubernetes cluster using Vagrant and Ansible.
 
-### Kubernetes
-
-Kubernetes is a container ochestrator that lets you deploy, change and recover fast. You only job in k8s
-is to declare the desired state in which you want your cluster to stay and then k8s will take care
-of making that happen.
-
-Kubernetes deploys docker containers in "pods", on the available nodes that compose the cluster.
-It can allocate more or less pods scaling accordingly to the resources needed.
-
-Kubernetes can be installed on-premise (as we do here) or on the cloud. Installing it from scratch is painful, therefore either one uses pre-installed versions on AWS or Google Cloud, or one exploit programs 
-like kubeadm. Using kubeadm, one can install k8s, create the cluster, configure the networking between nodes and join them to the cluster quite easily.
-
-### What's needed
+### Requirements
 
 You need Vagrant and Ansible installed on your system. Then, everything should run as soon as you type:
 
@@ -25,7 +13,7 @@ vagrant up
 After around 60 seconds, you should be able to check that the cluster is working by calling:
 
 ````
-curl -X GET http://localhost:30000 
+curl -X GET http://localhost:30000
 ````
 
 Kill your vagrant machine with:
@@ -35,41 +23,50 @@ vagrant halt
 vagrant destroy
 ````
 
+### Structure of the repository
+
+The repository is organised as follows:
+
+- `Vagrantfile`: Vagrantfile that orchestrate the creation of the virtual machines for master and slave nodes
+- `playbook_master(nodes)`: the main setup of the master and slave nodes
+- `roles/`: contains the ansible roles called by the main playbooks
+- `variables/`: contains the setup of few env variables
+
 ### Further information
 
-There are two apps deployed on the cluster: 
+There are two apps deployed on the cluster:
 
-- A simple hello-world app (gcr.io/google-samples/hello-app:1.0) 
+- A simple hello-world app (gcr.io/google-samples/hello-app:1.0)
 reachable through port 30000.
 This app is deployed on a single pod, without autoscaling.
 
     ````
-    curl -X GET http://localhost:30000 
+    curl -X GET http://localhost:30000
     ````
 
-- A web-app taken from `https://github.com/fperi/flask_docker`. 
+- A web-app taken from `https://github.com/fperi/flask_docker`.
 This one is reachable through port 30001 and it has 2 endpoints:
 
     ````
     curl -X GET http://localhost:30001/
     ````
-    
+
     ````
     curl -d "[1,2]" -X POST http://localhost:30001/sum_list
     ````
-    
-    The first is a health check. The second one corresponds to a simple python 
-    script that performs the sum of the elements in a list.
-    This web-app is deployed with an autoscaler that can create up to 5 pods. 
 
-    If you want to see the autoscaler in action, open 2 terminals. 
-    Use the first to go into the master node `vagrant ssh master`. 
-    You can check the status of the cluster with: `kubectl get all`. You should 
-    see only one pod has a name starting with `app`. In the second widow of the terminal 
-    run `source test_autoscaling.sh`. This script will perform around 5000 
-    request to the web-app. After a minute or so by calling `kubectl get all`, 
-    you should see that the cluster has now 5 pods called `app`. Once the 
-    requests have finished, wait for another couple of minutes and the cluster 
+    The first is a health check. The second one corresponds to a simple python
+    script that performs the sum of the elements in a list.
+    This web-app is deployed with an autoscaler that can create up to 5 pods.
+
+    If you want to see the autoscaler in action, open 2 terminals.
+    Use the first to go into the master node `vagrant ssh master`.
+    You can check the status of the cluster with: `kubectl get all`. You should
+    see only one pod has a name starting with `app`. In the second widow of the terminal
+    run `source test_autoscaling.sh`. This script will perform around 5000
+    request to the web-app. After a minute or so by calling `kubectl get all`,
+    you should see that the cluster has now 5 pods called `app`. Once the
+    requests have finished, wait for another couple of minutes and the cluster
     will have destroyed the pods, and kept only one.
 
 ### Tips and tricks
@@ -128,6 +125,20 @@ Delete service and deployment:
 kubectl delete deployment name-of-deplyment
 kubectl delete service name-of-service
 ````
+
+### Kubernetes
+
+Kubernetes is a container ochestrator that lets you deploy, change and recover fast. You only job in k8s
+is to declare the desired state in which you want your cluster to stay and then k8s will take care
+of making that happen.
+
+Kubernetes deploys docker containers in "pods", on the available nodes that compose the cluster.
+It can allocate more or less pods scaling accordingly to the resources needed.
+
+Kubernetes can be installed on-premise (as we do here) or on the cloud.
+Installing it from scratch is painful, therefore either one uses pre-installed versions on AWS or Google Cloud,
+or one exploit programs like kubeadm. Using kubeadm, one can install k8s, create the cluster,
+configure the networking between nodes and join them to the cluster quite easily.
 
 ### Useful documentation
 

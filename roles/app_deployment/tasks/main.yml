@@ -11,7 +11,7 @@
 
 # Replace nodeport with the one in the configuration
 - name: replace port
-  replace: 
+  replace:
     path: /tmp/app_deployment.yml
     regexp: 'node_port_to_substitute'
     replace: '{{ app_port }}'
@@ -23,4 +23,4 @@
   become: false
   command: kubectl apply -f /tmp/app_deployment.yml
   tags:
-    - deploy  
+    - deploy

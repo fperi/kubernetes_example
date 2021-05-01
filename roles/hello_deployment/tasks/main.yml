@@ -10,7 +10,7 @@
 
 # Replace nodeport with the one in the configuration
 - name: replace port
-  replace: 
+  replace:
     path: /tmp/hello_deployment.yml
     regexp: 'node_port_to_substitute'
     replace: '{{ hello_port }}'
@@ -22,4 +22,4 @@
   become: false
   command: kubectl apply -f /tmp/hello_deployment.yml
   tags:
-    - deploy  
+    - deploy

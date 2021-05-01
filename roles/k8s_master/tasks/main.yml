@@ -1,14 +1,14 @@
 # This roles initialise the k8s master node
 
 # Check if initialisation files are already there
-# This will avoid Ansible to crash due to a failed 
+# This will avoid Ansible to crash due to a failed
 # initialisation
 - name: Check if Kubernetes was already initialised
   stat: path=/etc/kubernetes/kubelet.conf
   register: kb_there
   tags:
     - k8s
-    
+
 # Initialise k8s
 # pod-network-cidr must match the one in the calico yaml down below!!!
 - name: Initialize the Kubernetes cluster using kubeadm
@@ -35,7 +35,7 @@
   tags:
     - k8s
 
-# Install monitoring tools. 
+# Install monitoring tools.
 # This is essential for the autoscaler to work
 # Create dir for monitoring
 - name: Setup tmp dir to clone app
@@ -71,7 +71,7 @@
   tags:
     - k8s
 
-# Save tokens and keys to join nodes 
+# Save tokens and keys to join nodes
 # (which will be performed in the node configuration role)
 - name: Save join configuration
   become: true

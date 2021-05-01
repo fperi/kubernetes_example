@@ -1,7 +1,7 @@
 # This roles initialise the k8s slave nodes
 
 # Check if initialisation files are already there
-# This will avoid Ansible to crash due to a failed 
+# This will avoid Ansible to crash due to a failed
 # initialisation
 - name: Check if Kubernetes was already initialised
   stat: path=/etc/kubernetes/kubelet.conf

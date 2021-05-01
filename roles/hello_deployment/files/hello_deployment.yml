@@ -17,7 +17,7 @@ spec:
       run: hello-world
   strategy:
     # The following prevents downtime of the app
-    # by deploying new version of the pods first and then 
+    # by deploying new version of the pods first and then
     # taking down the old.
     rollingUpdate:
       maxSurge: 25%

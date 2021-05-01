@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
 
     # Require YAML module
     require 'yaml'
- 
+
     # Read YAML file with box details
     default_vars = YAML.load_file('variables/default_var.yml')
 
